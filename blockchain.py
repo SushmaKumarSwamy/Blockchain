@@ -4,7 +4,7 @@ genesis_block={
     'transactions': []
 }
 
-
+MINING_REWARD = 25
 blockchain= [genesis_block]
 open_transaction = []
 owner = 'Sush'
@@ -22,10 +22,29 @@ def get_last_blockchain_value():
     return blockchain[-1]
 
 
+def get_balance(participant):
+    tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
+    amount_sent = 0
+    for tx in tx_sender:
+        if len(tx) >0:
+            amount_sent += tx[0]
+    tx_receipient=  [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in blockchain]
+    amount_received = 0
+    for tx in tx_receipient:
+        if len(tx) > 0:
+            amount_received += tx[0]
+    return amount_received - amount_sent
+
 def mine_block():
     print('before mining---------',blockchain)
     last_block = blockchain[-1]
     hashed_block = hash_block(last_block)
+    reward_transaction = {
+        'sender': 'MINING',
+        'recipient': owner,
+        'amount':MINING_REWARD
+    }
+    open_transaction.append(reward_transaction)
     block = {'previous_hash' : hashed_block,
             'index': len(blockchain),
             'transactions': open_transaction
@@ -42,10 +61,10 @@ def add_transaction(recipient,sender = owner,amount=1.0):
         recipient: the recipient of the coin
         amount: the amount of coins sent with the transaction
     """
-    trx = [{ 'sender': sender,
+    trx = { 'sender': sender,
             'recipient': recipient,
             'amount': amount
-        }]
+        }
     open_transaction.append(trx)
     participants.add(sender)
     participants.add(recipient)
@@ -58,7 +77,7 @@ def get_choice():
 def get_transaction_value():
     """ takes new transaction input from the user as a float"""
     tx_receipient = input('enter the recipient of the transaction')
-    tx_amount = input('enter the amount you want to send')
+    tx_amount = int(input('enter the amount you want to send'))
     return tx_receipient, tx_amount
 
 
@@ -106,10 +125,13 @@ while True:
         print(participants)
     elif choice == 'q':
         break
+    else:
+        print('input was invalid, check from the list')
     if not block_verify():
         print('invalid chain')
         break
-    else:
-        print('user left')
+    print(get_balance('Sush'))
+else:
+    print('user left')
 
 print("done")
