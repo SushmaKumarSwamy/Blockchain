@@ -1,10 +1,12 @@
+import functools
+
 genesis_block={
     'previous_hash' : '',
     'index': 0,
     'transactions': []
 }
 
-MINING_REWARD = 25
+MINING_REWARD = 10
 blockchain= [genesis_block]
 open_transaction = []
 owner = 'Sush'
@@ -26,15 +28,11 @@ def get_balance(participant):
     tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
     open_tx_sender = [ tx['amount'] for tx in open_transaction if tx['sender'] == participant]
     tx_sender.append(open_tx_sender)
-    amount_sent = 0
-    for tx in tx_sender:
-        if len(tx) >0:
-            amount_sent += tx[0]
+    amount_sent = functools.reduce(lambda tx_sum, tx_amt : tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0,tx_sender,0)
+    
     tx_receipient=  [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in blockchain]
-    amount_received = 0
-    for tx in tx_receipient:
-        if len(tx) > 0:
-            amount_received += tx[0]
+    amount_received = functools.reduce(lambda tx_sum,tx_amt:tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0,tx_receipient,0)
+  
     return amount_received - amount_sent
 
 def mine_block():
@@ -94,7 +92,7 @@ def get_choice():
 def get_transaction_value():
     """ takes new transaction input from the user as a float"""
     tx_receipient = input('enter the recipient of the transaction')
-    tx_amount = int(input('enter the amount you want to send'))
+    tx_amount = float(input('enter the amount you want to send'))
     return tx_receipient, tx_amount
 
 
@@ -156,7 +154,7 @@ while True:
     if not block_verify():
         print('invalid chain')
         break
-    print(get_balance('Sush'))
+    print('Balance of {} is : {:6.2f}'.format('Sush',get_balance('Sush')))
 else:
     print('user left')
 
