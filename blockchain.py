@@ -1,9 +1,12 @@
 from functools import reduce
 import hashlib as hl
 from collections import OrderedDict
-
+import json
 
 from hash_util import hash_string_256, hash_block
+
+
+
 
 
 genesis_block={
@@ -75,6 +78,7 @@ def mine_block():
             'proof':proof
             }
     blockchain.append(block)
+    
     return True
 
 
@@ -96,6 +100,7 @@ def add_transaction(recipient,sender = owner,amount=1.0):
         open_transaction.append(trx)
         participants.add(sender)
         participants.add(recipient)
+        save_data()
         return True
     return False
 
@@ -139,6 +144,46 @@ def block_verify():
     return True
 
 
+def save_data():
+    with open('blockchain.txt', mode='w') as f:
+        f.write(json.dumps(blockchain))
+        f.write('\n')
+        f.write(json.dumps(open_transaction))
+
+
+def load_data():
+    with open('blockchain.txt', mode='r') as f:
+        file_content = f.readlines()
+        global blockchain
+        global open_transaction
+        blockchain = json.loads(file_content[0][:-1])
+        updated_blockchain = []
+        for block in blockchain:
+            updated_block = {
+                'previous_hash': block['previous_hash'],
+                'index':block['index'],
+                'proof':block['proof'],
+                'transactions':[OrderedDict([('sender',tx['sender']),('recipient',tx['recipient']),('amount',tx['amount'])]) for tx in block['transactions']]
+            }
+            updated_blockchain.append(updated_block)
+        blockchain = updated_blockchain
+        open_transaction = json.loads(file_content[1])
+        updated_transactions = []
+        for tx in open_transaction:
+            updated_transaction = OrderedDict([('sender',tx['sender']),('recipient',tx['recipient']),('amount',tx['amount'])])
+            updated_transactions.append(updated_transaction)
+        open_transaction = updated_transactions
+        
+
+load_data()
+
+
+
+print(blockchain)
+print(open_transaction)
+
+
+
 while True:
     print('Choose:')
     print('1: Add value to the blockchain')
@@ -159,6 +204,7 @@ while True:
     elif choice == '2':
         if mine_block():
             open_transaction = []
+            save_data()
         # print(blockchain)
     elif choice == '3':
         print_blocks()
