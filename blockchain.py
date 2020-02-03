@@ -7,23 +7,28 @@ from hash_util import hash_string_256, hash_block
 
 
 
-
+# mining reward for the minners
 MINING_REWARD = 10
+# the origianl blockchain
 blockchain= []
+# transaction in pool
 open_transaction = []
+
+# person incharge of this node
 owner = 'Sush'
+# overall view of the participants involved in this blockchain
 participants = { 'Sush' }
 
 
 
-
+# to get the last block of the blockchain
 def get_last_blockchain_value():
     """ returns the last elemet of the blockchain"""
     if len(blockchain) < 1:
         return None
     return blockchain[-1]
 
-
+# to get the balance of the participants as of now the owner!
 def get_balance(participant):
     tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
     open_tx_sender = [ tx['amount'] for tx in open_transaction if tx['sender'] == participant]
@@ -36,12 +41,14 @@ def get_balance(participant):
     return amount_received - amount_sent
 
 
+# checking which hash is the 'one' based on the complexity
 def valid_proof(transactions,last_hash,proof):
     guess = (str(transactions)+ str(last_hash)+str(proof)).encode()
     guess_hash = hash_string_256(guess)
     print(guess_hash)
     return guess_hash[0:2]=='00'
 
+# generating hashes for the block
 def proof_of_work():
     last_block = blockchain[-1]
     last_hash = hash_block(last_block)
@@ -50,6 +57,8 @@ def proof_of_work():
         proof +=1
     return proof
 
+
+# mining the block i.e adding thr transaction from opent pool to block
 def mine_block():
     last_block = blockchain[-1]
     hashed_block = hash_block(last_block)
@@ -74,6 +83,7 @@ def mine_block():
     return True
 
 
+# adding transaction to the pool
 def add_transaction(recipient,sender = owner,amount=1.0):
     """ blockchain will be appended with new transaction and previous transaction
     Arguments 
@@ -97,33 +107,34 @@ def add_transaction(recipient,sender = owner,amount=1.0):
     return False
 
 
+# to chaeck whether the user has sufficient balance to send the money he intend to do 
 def verify_transaction(transaction):
     sender_balance= get_balance(transaction['sender'])
     return sender_balance >= transaction['amount']
 
-
+# just to check all the transactions in open transaction are valid!
 def verify_transactions():
     print(open_transaction)
     return all([verify_transaction(tx) for tx in open_transaction])
 
-
+# to take what user wants to do
 def get_choice():
     choice = input('enter your choice')
     return choice
 
-
+# to fetch the user values
 def get_transaction_value():
     """ takes new transaction input from the user as a float"""
     tx_receipient = input('enter the recipient of the transaction')
     tx_amount = float(input('enter the amount you want to send'))
     return tx_receipient, tx_amount
 
-
+#print blocks:)
 def print_blocks():
     for block in blockchain:
         print(block)
 
-
+# to check the blockchain is not tampered with some false data
 def block_verify():
     for (index, block) in enumerate(blockchain):
         if index == 0 :
@@ -131,11 +142,11 @@ def block_verify():
         if block['previous_hash'] != hash_block(blockchain[index-1]):
             return False
         if not valid_proof(block['transactions'][:-1],block['previous_hash'],block['proof']):
-            print('proof of wprk is invalid')
+            print('proof of work is invalid')
             return False
     return True
 
-
+# saving the data to the file
 def save_data():
     try:
         with open('blockchain.txt', mode='w') as f:
@@ -150,7 +161,7 @@ def save_data():
             # f.write(pickle.dumps(save_data))
     except IOError:
         print('Saving failed') 
-
+# loading the data from the file before starting the blockchain
 def load_data():
     global blockchain
     global open_transaction
@@ -191,7 +202,7 @@ def load_data():
 load_data()
 
 
-
+# user interface 
 while True:
     print('Choose:')
     print('1: Add value to the blockchain')
