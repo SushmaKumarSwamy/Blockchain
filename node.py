@@ -48,7 +48,7 @@ class Node:
                     print('transaction added!!')
                 else:
                     print('transaction failed!')
-                print(self.blockchain.open_transaction)
+                print(self.blockchain.get_open_transaction)
             elif choice == '2':
                 self.blockchain.mine_block()
                     
@@ -56,8 +56,7 @@ class Node:
             elif choice == '3':
                 self.print_blocks()
             elif choice == '6':
-                verifier = Verification()
-                if verifier.verify_transactions(self.blockchain.open_transaction,self.blockchain.get_balance):
+                if Verification.verify_transactions(self.blockchain.get_open_transaction,self.blockchain.get_balance):
                     print('transactions are valid')
                 else:
                     print('transactions are not valid')
@@ -65,8 +64,8 @@ class Node:
                 break
             else:
                 print('input was invalid, check from the list')
-            verifier = Verification()
-            if not verifier.block_verify(self.blockchain.chain):
+
+            if not Verification.block_verify(self.blockchain.chain):
                 print('invalid chain')
                 break
             print('Balance of {} is : {:6.2f}'.format(self.id,self.blockchain.get_balance()))
