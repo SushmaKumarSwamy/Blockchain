@@ -120,6 +120,8 @@ class Blockchain:
             recipient: the recipient of the coin
             amount: the amount of coins sent with the transaction
         """
+        if self.hosting_node == None:
+            return False
         trx = Transaction(sender,recipient,amount)
         if Verification.verify_transaction(trx,self.get_balance):
             self.__open_transaction.append(trx)
@@ -132,6 +134,8 @@ class Blockchain:
 
     # mining the block i.e adding thr transaction from opent pool to block
     def mine_block(self):
+        if self.hosting_node == None:
+            return False
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
         proof = self.proof_of_work()
