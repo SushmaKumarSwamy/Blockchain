@@ -44,12 +44,14 @@ class Node:
             print('4: Create wallet')
             print('5: load Wallet')
             print('6: check transaction validity on open transaction')
+            print('7: save wallet')
             print('q: Quit')
             choice = self.get_choice()
             if choice == '1':
                 tx_data = self.get_transaction_value()
                 recipient, amount = tx_data
-                if self.blockchain.add_transaction(recipient,self.wallet.public_key, amount=amount):
+                signature = self.wallet.sign_transaction(self.wallet.public_key, recipient , amount)
+                if self.blockchain.add_transaction(recipient,self.wallet.public_key, signature, amount=amount):
                     print('transaction added!!')
                 else:
                     print('transaction failed!')
@@ -65,12 +67,16 @@ class Node:
                 self.wallet.create_keys()
                 self.blockchain = Blockchain(self.wallet.public_key)
             elif choice == '5':
-                pass
+                self.wallet.load_keys()
+                self.blockchain = Blockchain(self.wallet.public_key)
             elif choice == '6':
                 if Verification.verify_transactions(self.blockchain.get_open_transaction(),self.blockchain.get_balance):
                     print('transactions are valid')
                 else:
                     print('transactions are not valid')
+            elif  choice == '7':
+                self.wallet.save_keys()
+            
             elif choice == 'q':
                 break
             else:
