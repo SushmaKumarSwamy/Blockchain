@@ -20,8 +20,11 @@ class Blockchain:
         genesis_block = Block(0,'',[],100,0)
         self.chain = [genesis_block]
         self.__open_transaction = []
-        self.load_data()
         self.hosting_node = hosting_node_id
+        self.__peer_nodes = set()
+        self.load_data()
+
+
     @property
     def chain (self):
         return self.__chain[:]
@@ -49,12 +52,14 @@ class Blockchain:
                     updated_block = Block(block['index'],block['previous_hash'],converted_tx ,block['proof'],block['timestamp'])
                     updated_blockchain.append(updated_block)
                 self.chain = updated_blockchain
-                open_transaction = json.loads(file_content[1])
+                open_transaction = json.loads(file_content[1][:-1])
                 updated_transactions = []
                 for tx in open_transaction:
                     updated_transaction = Transaction(tx['sender'],tx['recipient'], tx['signature'], tx['amount'])
                     updated_transactions.append(updated_transaction)
                 self.__open_transaction = updated_transactions
+                peer_nodes = json.loads(file_content[2])
+                self.__peer_nodes= set(peer_nodes)
         except (IOError, IndexError):
             print('error handled...')
 
@@ -69,6 +74,8 @@ class Blockchain:
                 f.write('\n')
                 saveable_tx = [tx.__dict__ for tx in self.__open_transaction]
                 f.write(json.dumps(saveable_tx))
+                f.write('\n')
+                f.write(json.dumps(list(self.__peer_nodes)))
                 # save_data = {
                 #     'chain': blockchain,
                 #     'ot': open_transactions
@@ -157,7 +164,13 @@ class Blockchain:
         self.save_data()
         return block
 
+    def add_peer_node(self, node):
+        self.__peer_nodes.add(node)
+        self.save_data()
 
+    def remove_peer_node(self, node):
+        self.__peer_nodes.discard(node)
+        self.save_data()
 
-
-
+    def get_peer_nodes(self):
+        return list(self.__peer_nodes)
